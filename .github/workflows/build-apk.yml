@@ -27,10 +27,23 @@ jobs:
           java-version: 21
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: 12266719
-          packages: tools platform-tools
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          find "$ANDROID_HOME/cmdline-tools" -maxdepth 2 -type f -name sdkmanager -print || true
+
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found"
+            exit 1
+          fi
+
+          SDK_DIR="$(dirname "$SDKMANAGER")"
+          echo "$SDK_DIR" >> "$GITHUB_PATH"
+
+          echo "Using sdkmanager: $SDKMANAGER"
 
       - name: Accept Android SDK licenses
         shell: bash
