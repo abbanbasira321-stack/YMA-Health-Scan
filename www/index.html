@@ -1,0 +1,860 @@
+<!DOCTYPE html><html lang="ha">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b7a5c">
+  <title>YMA Health Scan</title>  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f2f7f5;
+      color: #17352d;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 650px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    header {
+      background: #0b7a5c;
+      color: white;
+      padding: 25px 20px;
+      border-radius: 22px;
+      margin-bottom: 18px;
+      text-align: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,.12);
+    }
+
+    header .logo {
+      font-size: 45px;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 27px;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      opacity: .9;
+      font-size: 14px;
+    }
+
+    .warning {
+      background: #fff7df;
+      border: 1px solid #ead58a;
+      color: #664f00;
+      padding: 14px;
+      border-radius: 15px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .card h2 {
+      font-size: 19px;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: #66756f;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .scan-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 15px;
+    }
+
+    .scan-option {
+      border: 2px solid #dce8e4;
+      background: white;
+      border-radius: 17px;
+      padding: 18px 10px;
+      cursor: pointer;
+      transition: .2s;
+      text-align: center;
+    }
+
+    .scan-option:hover {
+      transform: translateY(-2px);
+    }
+
+    .scan-option.active {
+      border-color: #0b7a5c;
+      background: #eaf8f3;
+    }
+
+    .scan-icon {
+      font-size: 38px;
+      margin-bottom: 8px;
+    }
+
+    .scan-option strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .scan-option small {
+      display: block;
+      margin-top: 5px;
+      color: #718078;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .primary {
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      background: #0b7a5c;
+      color: white;
+      margin-top: 15px;
+    }
+
+    .primary:disabled {
+      background: #aabdb7;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: white;
+      color: #0b7a5c;
+      border: 1px solid #b8d2c9;
+      margin-top: 10px;
+    }
+
+    .scan-status {
+      background: #f5f9f7;
+      border-radius: 13px;
+      padding: 13px;
+      margin-top: 13px;
+      font-size: 14px;
+    }
+
+    .camera-box {
+      display: none;
+      margin-top: 15px;
+    }
+
+    .camera-box video {
+      width: 100%;
+      border-radius: 18px;
+      background: #111;
+      display: block;
+    }
+
+    .camera-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .symptom {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid #e1e9e6;
+      border-radius: 13px;
+      margin-top: 9px;
+      cursor: pointer;
+      background: white;
+    }
+
+    .symptom input {
+      width: 20px;
+      height: 20px;
+      accent-color: #0b7a5c;
+    }
+
+    .severity {
+      width: 100%;
+      margin-top: 15px;
+      accent-color: #0b7a5c;
+    }
+
+    .severity-numbers {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: #718078;
+      margin-top: 5px;
+    }
+
+    .severity-value {
+      text-align: center;
+      font-weight: bold;
+      font-size: 22px;
+      color: #0b7a5c;
+      margin-top: 8px;
+    }
+
+    .progress {
+      height: 12px;
+      background: #e1ebe7;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #0b7a5c;
+      transition: width .5s;
+    }
+
+    .result {
+      display: none;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 16px;
+      background: white;
+      border: 2px solid #dce8e4;
+    }
+
+    .result.high {
+      border-color: #d94b4b;
+      background: #fff3f3;
+    }
+
+    .result.medium {
+      border-color: #e0a92f;
+      background: #fff9e9;
+    }
+
+    .result.low {
+      border-color: #55a887;
+      background: #f0faf6;
+    }
+
+    .result-title {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 9px;
+    }
+
+    .score {
+      font-size: 28px;
+      font-weight: bold;
+      color: #0b7a5c;
+      margin: 12px 0;
+    }
+
+    .emergency {
+      background: #c62828;
+      color: white;
+      padding: 15px;
+      border-radius: 14px;
+      margin-top: 15px;
+      line-height: 1.5;
+    }
+
+    footer {
+      text-align: center;
+      color: #718078;
+      font-size: 12px;
+      padding: 20px 5px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 420px) {
+      .app {
+        padding: 12px;
+      }
+
+      .scan-options {
+        grid-template-columns: 1fr;
+      }
+
+      header h1 {
+        font-size: 23px;
+      }
+    }
+  </style></head><body><div class="app">  <header>
+    <div class="logo">🩺</div>
+    <h1>YMA Health Scan</h1>
+    <p>Mataimakin tantance alamomin lafiya</p>
+  </header>  <div class="warning">
+    ⚠️ <strong>Sanarwa:</strong>
+    Wannan app prototype ne. Ba ya yin cikakken diagnosis kuma bai kamata ya maye gurbin likita ba.
+    Idan kana da matsalar gaggawa, je asibiti ko kira emergency service.
+  </div>  <!-- SCAN TYPE -->  <section class="card"><h2>1. Zaɓi abin da za a Scan</h2>
+
+<p class="muted">
+  Zaɓi fuska ko yatsa/tafkin hannu domin prototype scan.
+</p>
+
+<div class="scan-options">
+
+  <button class="scan-option" id="faceOption">
+    <div class="scan-icon">🙂</div>
+    <strong>Face Scan</strong>
+    <small>Scan fuska</small>
+  </button>
+
+  <button class="scan-option" id="fingerOption">
+    <div class="scan-icon">☝️</div>
+    <strong>Finger / Palm</strong>
+    <small>Scan yatsa</small>
+  </button>
+
+</div>
+
+<div class="scan-status" id="scanStatus">
+  Ba a zaɓi scan ba.
+</div>
+
+<button class="primary" id="cameraButton" disabled>
+  📷 Buɗe Camera
+</button>
+
+<div class="camera-box" id="cameraBox">
+
+  <video id="camera" autoplay playsinline></video>
+
+  <div class="camera-buttons">
+    <button class="primary" id="captureButton">
+      📸 Ɗauki Hoto
+    </button>
+
+    <button class="secondary" id="closeCamera">
+      ✕ Rufe Camera
+    </button>
+  </div>
+
+  <canvas id="canvas" style="display:none;"></canvas>
+
+</div>
+
+<div class="scan-status" id="scanResult" style="display:none;"></div>
+
+  </section>  <!-- SYMPTOMS -->  <section class="card"><h2>2. Zaɓi alamomin da kake ji</h2>
+
+<p class="muted">
+  Zaɓi duk alamomin da suka dace da kai.
+</p>
+
+<label class="symptom">
+  <input type="checkbox" value="fever">
+  <span>🌡️ Zazzabi ko jin jiki yana zafi</span>
+</label>
+
+<label class="symptom">
+  <input type="checkbox" value="cough">
+  <span>😷 Tari ko matsalar numfashi</span>
+</label>
+
+<label class="symptom">
+  <input type="checkbox" value="fatigue">
+  <span>😴 Gajiya sosai ko rauni</span>
+</label>
+
+<label class="symptom">
+  <input type="checkbox" value="pain">
+  <span>🤕 Ciwo mai yawa</span>
+</label>
+
+<label class="symptom">
+  <input type="checkbox" value="rash">
+  <span>🔴 Kuraje ko canjin fata</span>
+</label>
+
+<label class="symptom">
+  <input type="checkbox" value="dizziness">
+  <span>😵 Jiri ko jin kamar za ka suma</span>
+</label>
+
+  </section>  <!-- SEVERITY -->  <section class="card"><h2>3. Tsananin alamomin</h2>
+
+<p class="muted">
+  Nawa ne tsananin rashin lafiyar a yanzu?
+</p>
+
+<input
+  class="severity"
+  id="severity"
+  type="range"
+  min="0"
+  max="10"
+  value="3"
+>
+
+<div class="severity-numbers">
+  <span>0 - Ƙarami</span>
+  <span>10 - Mai tsanani</span>
+</div>
+
+<div class="severity-value" id="severityValue">
+  3 / 10
+</div>
+
+  </section>  <!-- ANALYSIS -->  <section class="card"><h2>4. AI Health Screening</h2>
+
+<p class="muted">
+  Za mu haɗa scan da alamomin da ka zaɓa domin yin preliminary screening.
+</p>
+
+<div class="progress">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<p class="muted" id="scoreText" style="margin-top:8px;">
+  Ba a fara screening ba.
+</p>
+
+<button class="primary" id="analyzeButton">
+  🤖 Duba Sakamako
+</button>
+
+  </section>  <!-- RESULT -->  <section class="result" id="result"><div class="result-title" id="resultTitle"></div>
+
+<p id="resultMessage"></p>
+
+<div class="score">
+  <span id="score">0</span>/100
+</div>
+
+<p class="muted">
+  <strong>Scan:</strong>
+  <span id="resultScan">—</span>
+</p>
+
+<p class="muted" style="margin-top:5px;">
+  <strong>Alamomi:</strong>
+  <span id="resultSymptoms">—</span>
+</p>
+
+<div class="emergency" id="emergencyBox" style="display:none;">
+  🚨 <strong>GARGAƊI:</strong><br>
+  Idan kana fama da matsalar numfashi mai tsanani,
+  suma, ciwon kirji mai tsanani, ko wata alamar gaggawa,
+  nemi taimakon likita nan take.
+</div>
+
+<p class="muted" style="margin-top:15px;">
+  ⚠️ Wannan sakamakon screening ne kawai. Ba diagnosis na likita ba ne.
+</p>
+
+  </section>  <button class="secondary" id="resetButton">
+    ↻ Sake Farawa
+  </button>  <footer>
+    YMA Health Scan Prototype<br>
+    © 2026 YMA
+  </footer></div><script>
+
+let scanType = "";
+let cameraStream = null;
+
+const faceOption = document.getElementById("faceOption");
+const fingerOption = document.getElementById("fingerOption");
+
+const scanStatus = document.getElementById("scanStatus");
+const cameraButton = document.getElementById("cameraButton");
+
+const cameraBox = document.getElementById("cameraBox");
+const camera = document.getElementById("camera");
+const canvas = document.getElementById("canvas");
+
+const captureButton = document.getElementById("captureButton");
+const closeCamera = document.getElementById("closeCamera");
+
+const scanResult = document.getElementById("scanResult");
+
+const severity = document.getElementById("severity");
+const severityValue = document.getElementById("severityValue");
+
+const analyzeButton = document.getElementById("analyzeButton");
+
+const progressBar = document.getElementById("progressBar");
+const scoreText = document.getElementById("scoreText");
+
+const result = document.getElementById("result");
+const resultTitle = document.getElementById("resultTitle");
+const resultMessage = document.getElementById("resultMessage");
+
+const scoreElement = document.getElementById("score");
+const resultScan = document.getElementById("resultScan");
+const resultSymptoms = document.getElementById("resultSymptoms");
+
+const emergencyBox = document.getElementById("emergencyBox");
+
+const resetButton = document.getElementById("resetButton");
+
+
+/* =========================
+   SELECT FACE
+========================= */
+
+faceOption.addEventListener("click", () => {
+
+  scanType = "face";
+
+  faceOption.classList.add("active");
+  fingerOption.classList.remove("active");
+
+  scanStatus.textContent =
+    "🙂 An zaɓi Face Scan.";
+
+  cameraButton.disabled = false;
+
+});
+
+
+/* =========================
+   SELECT FINGER
+========================= */
+
+fingerOption.addEventListener("click", () => {
+
+  scanType = "finger";
+
+  fingerOption.classList.add("active");
+  faceOption.classList.remove("active");
+
+  scanStatus.textContent =
+    "☝️ An zaɓi Finger / Palm Scan.";
+
+  cameraButton.disabled = false;
+
+});
+
+
+/* =========================
+   CAMERA
+========================= */
+
+cameraButton.addEventListener("click", async () => {
+
+  try {
+
+    cameraStream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "user"
+        },
+        audio: false
+      });
+
+    camera.srcObject = cameraStream;
+
+    cameraBox.style.display = "block";
+
+    scanResult.style.display = "none";
+
+  } catch (error) {
+
+    alert(
+      "An kasa buɗe camera. Ka tabbatar app yana da izinin Camera."
+    );
+
+  }
+
+});
+
+
+/* =========================
+   CAPTURE
+========================= */
+
+captureButton.addEventListener("click", () => {
+
+  if (!cameraStream) return;
+
+  const width = camera.videoWidth;
+  const height = camera.videoHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d");
+
+  context.drawImage(
+    camera,
+    0,
+    0,
+    width,
+    height
+  );
+
+  scanResult.style.display = "block";
+
+  scanResult.textContent =
+    scanType === "face"
+      ? "✅ An ɗauki hoton fuska. Prototype scan ya kammala."
+      : "✅ An ɗauki hoton yatsa/tafkin hannu. Prototype scan ya kammala.";
+
+});
+
+
+/* =========================
+   CLOSE CAMERA
+========================= */
+
+closeCamera.addEventListener("click", () => {
+
+  stopCamera();
+
+  cameraBox.style.display = "none";
+
+});
+
+
+function stopCamera() {
+
+  if (cameraStream) {
+
+    cameraStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    cameraStream = null;
+
+  }
+
+}
+
+
+/* =========================
+   SEVERITY
+========================= */
+
+severity.addEventListener("input", () => {
+
+  severityValue.textContent =
+    severity.value + " / 10";
+
+});
+
+
+/* =========================
+   ANALYZE
+========================= */
+
+analyzeButton.addEventListener("click", () => {
+
+  const selectedSymptoms =
+    Array.from(
+      document.querySelectorAll(
+        'input[type="checkbox"]:checked'
+      )
+    );
+
+  const symptoms =
+    selectedSymptoms.map(
+      input => input.value
+    );
+
+  const severityNumber =
+    Number(severity.value);
+
+  let healthScore = 0;
+
+  healthScore +=
+    symptoms.length * 11;
+
+  healthScore +=
+    severityNumber * 5;
+
+  if (scanType !== "") {
+    healthScore += 5;
+  }
+
+  healthScore =
+    Math.min(100, healthScore);
+
+
+  progressBar.style.width =
+    healthScore + "%";
+
+
+  scoreText.textContent =
+    "Screening score: " +
+    healthScore +
+    "/100";
+
+
+  let title = "";
+  let message = "";
+  let resultClass = "";
+
+  const emergency =
+    severityNumber >= 9 ||
+    (
+      symptoms.includes("cough") &&
+      severityNumber >= 8
+    );
+
+
+  if (emergency) {
+
+    title =
+      "🚨 A nemi kulawar likita";
+
+    message =
+      "Alamomin da aka shigar sun nuna babban matakin damuwa. Kada a dogara da wannan app kawai. Nemi taimakon likita ko je asibiti da wuri.";
+
+    resultClass = "high";
+
+    emergencyBox.style.display =
+      "block";
+
+  }
+
+  else if (healthScore >= 50) {
+
+    title =
+      "⚠️ A kula da alamomin";
+
+    message =
+      "Akwai alamomi da yawa ko masu matsakaicin ƙarfi. Zai dace ka tuntubi ma'aikacin lafiya domin cikakken bincike.";
+
+    resultClass = "medium";
+
+    emergencyBox.style.display =
+      "none";
+
+  }
+
+  else {
+
+    title =
+      "✅ Ƙananan haɗari a wannan screening";
+
+    message =
+      "Babu isassun bayanai da suka nuna babban haɗari a wannan prototype. Idan alamomin suka ci gaba ko suka tsananta, ka ga likita.";
+
+    resultClass = "low";
+
+    emergencyBox.style.display =
+      "none";
+
+  }
+
+
+  result.className =
+    "result " + resultClass;
+
+  result.style.display =
+    "block";
+
+
+  resultTitle.textContent =
+    title;
+
+  resultMessage.textContent =
+    message;
+
+  scoreElement.textContent =
+    healthScore;
+
+
+  resultScan.textContent =
+    scanType === "face"
+      ? "Face Scan"
+      : scanType === "finger"
+        ? "Finger / Palm Scan"
+        : "Ba a yi scan ba";
+
+
+  resultSymptoms.textContent =
+    symptoms.length > 0
+      ? symptoms.length +
+        " alama aka zaɓa"
+      : "Babu";
+
+
+  result.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+});
+
+
+/* =========================
+   RESET
+========================= */
+
+resetButton.addEventListener("click", () => {
+
+  stopCamera();
+
+  cameraBox.style.display =
+    "none";
+
+  scanType = "";
+
+  faceOption.classList.remove(
+    "active"
+  );
+
+  fingerOption.classList.remove(
+    "active"
+  );
+
+  cameraButton.disabled =
+    true;
+
+  scanStatus.textContent =
+    "Ba a zaɓi scan ba.";
+
+  scanResult.style.display =
+    "none";
+
+  document
+    .querySelectorAll(
+      'input[type="checkbox"]'
+    )
+    .forEach(input => {
+      input.checked = false;
+    });
+
+  severity.value = 3;
+
+  severityValue.textContent =
+    "3 / 10";
+
+  progressBar.style.width =
+    "0%";
+
+  scoreText.textContent =
+    "Ba a fara screening ba.";
+
+  result.style.display =
+    "none";
+
+});
+
+
+</script></body>
+</html>
