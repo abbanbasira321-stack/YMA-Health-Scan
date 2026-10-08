@@ -352,7 +352,23 @@
     </button>
   </div>
 
-  <canvas id="canvas" style="display:none;"></canvas>
+<div id="capturedImageBox" style="display:none; margin-top:15px;">
+  <h3>🖼️ Hoton Scan</h3>
+
+  <img
+    id="capturedImage"
+    alt="Hoton da aka ɗauka"
+    style="
+      width:100%;
+      max-width:420px;
+      border-radius:16px;
+      display:block;
+      margin:10px auto;
+    "
+  />
+</div>
+
+<canvas id="canvas" style="display:none;"></canvas>
 
 </div>
 
@@ -484,6 +500,11 @@ const cameraButton = document.getElementById("cameraButton");
 const cameraBox = document.getElementById("cameraBox");
 const camera = document.getElementById("camera");
 const canvas = document.getElementById("canvas");
+const capturedImageBox =
+  document.getElementById("capturedImageBox");
+
+const capturedImage =
+  document.getElementById("capturedImage");
 
 const captureButton = document.getElementById("captureButton");
 const closeCamera = document.getElementById("closeCamera");
@@ -606,15 +627,19 @@ captureButton.addEventListener("click", () => {
     height
   );
 
-  scanResult.style.display = "block";
+const imageData = canvas.toDataURL("image/jpeg", 0.9);
 
-  scanResult.textContent =
-    scanType === "face"
-      ? "✅ An ɗauki hoton fuska. Prototype scan ya kammala."
-      : "✅ An ɗauki hoton yatsa/tafkin hannu. Prototype scan ya kammala.";
+capturedImage.src = imageData;
+capturedImageBox.style.display = "block";
+
+scanResult.style.display = "block";
+
+scanResult.textContent =
+  scanType === "face"
+    ? "✅ An ɗauki hoton fuska. Prototype scan ya kammala."
+    : "✅ An ɗauki hoton yatsa/tafkin hannu. Prototype scan ya kammala.";
 
 });
-
 
 /* =========================
    CLOSE CAMERA
