@@ -490,6 +490,17 @@
 
 let scanType = "";
 let cameraStream = null;
+let NativeBiometric = null;
+
+if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+  import("@capgo/capacitor-native-biometric")
+    .then(module => {
+      NativeBiometric = module.NativeBiometric;
+    })
+    .catch(error => {
+      console.error("Biometric plugin error:", error);
+    });
+}
 
 const faceOption = document.getElementById("faceOption");
 const fingerOption = document.getElementById("fingerOption");
@@ -555,7 +566,7 @@ faceOption.addEventListener("click", () => {
    SELECT FINGER
 ========================= */
 
-fingerOption.addEventListener("click", () => {
+fingerOption.addEventListener("click", async () => {
 
   scanType = "finger";
 
@@ -565,10 +576,59 @@ fingerOption.addEventListener("click", () => {
   scanStatus.textContent =
     "☝️ An zaɓi Finger / Palm Scan.";
 
-  cameraButton.disabled = false;
+  cameraButton.disabled = true;
+
+  if (!NativeBiometric) {
+    scanStatus.textContent =
+      "⚠️ Fingerprint bai samu ba. Ana buƙatar sabon APK.";
+    return;
+  }
+
+  try {
+
+    const availability =
+      await NativeBiometric.isAvailable();
+
+    if (!availability.isAvailable) {
+
+      scanStatus.textContent =
+        "⚠️ Wannan wayar ba ta da fingerprint/biometric da za a yi amfani da shi.";
+
+      return;
+    }
+
+    scanStatus.textContent =
+      "👆 Saka yatsa a fingerprint sensor...";
+
+    await NativeBiometric.verifyIdentity({
+      reason:
+        "Tabbatar da fingerprint domin YMA Health Scan",
+      title:
+        "YMA Health Scan",
+      subtitle:
+        "Saka yatsa",
+      description:
+        "Taɓa fingerprint sensor domin ci gaba."
+    });
+
+    scanStatus.textContent =
+      "✅ An tabbatar da fingerprint.";
+
+    scanResult.style.display = "block";
+
+    scanResult.textContent =
+      "✅ Fingerprint verification ya kammala. Wannan ba gano cuta daga fingerprint ba ne.";
+
+  } catch (error) {
+
+    console.error("Fingerprint error:", error);
+
+    scanStatus.textContent =
+      "❌ Ba a tabbatar da fingerprint ba. Sake gwadawa.";
+
+  }
 
 });
-
 
 /* =========================
    CAMERA
